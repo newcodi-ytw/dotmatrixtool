@@ -19,6 +19,13 @@ a:hover {
   border: 1px solid #fff;
 }
 
+.input-field-image-name {
+  width: 90px;
+  color: #333;
+  text-shadow: none; /* Prevent inheritence from `body` */
+  background-color: #fff;
+  border: 1px solid #fff;
+}
 
 /*
  * Base structure
@@ -164,33 +171,93 @@ body {
   }
 }
 
+.table-container {
+  text-align: center;   /* Center the content horizontally */
+}
+
 #_grid table {
-  border-collapse: separate;
-  border-spacing: 2px;
-  cursor:crosshair;
-  margin:auto;
+  border-collapse: separate;    /* Keep existing styles */
+  border-spacing: 2px;          /* Keep existing styles */
+  cursor: crosshair;            /* Keep existing styles */
+  margin: 0 auto;               /* Center the table */
+  display: table;               /* Change to table display for centering */
 }
 
 #_grid table tr td {
-  background-color: white;
-  padding:10px;
+  background-color: #5a5a5a;
+  padding:7px;
 }
 
 #_grid table tr td:hover, #_grid table tr td.on:hover {
   background-color: #c3c1ff;
-  padding:10px;
+  padding:7px;
 }
 
 #_grid table tr td.on {
-  background-color: #a9a9a9;
-  padding:10px;
+  background-color: white;
+  padding:7px;
+}
+
+#_grid td.disabled-cell {
+  position: relative; /* Position relative to the cell */
+  background-color: black;
+  cursor: not-allowed;      /* Change cursor to indicate it's disabled */
+  pointer-events: none;     /* Prevent interaction with these cells */
+}
+
+#_grid td.disabled-cell::after {
+  content: 'X'; /* Unicode character for a cross mark */
+  color: white;   /* Change the color as needed */
+  position: absolute; /* Position it absolutely within the cell */
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust position to truly center */
+  font-size: 15px; /* Adjust size as needed */
+
 }
 
 #_output {
   text-align: left;
+  white-space: break-spaces;
 }
 
 .footer>div {
   text-align: center;
   margin-top:20px;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+pre[class*="lang-"] {
+  position: relative;
+  overflow: auto;
+
+  /* make space  */
+  margin: 5px 0;
+  padding: 1.75rem 0 1.75rem 1rem;
+  border-radius: 10px;
+}
+
+pre[class*="lang-"] button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px;
+  background-color: #eec6c6;
+
+  border: ridge 1px #7b7b7c;
+  border-radius: 5px;
+  /* text-shadow: #c4c4c4 0 0 2px; */
+}
+
+pre[class*="lang-"] button:hover {
+  cursor: pointer;
+  background-color: #bcbabb;
 }
