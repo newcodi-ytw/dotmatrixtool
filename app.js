@@ -4,14 +4,50 @@ var rowMajor = false;
 var msbendian = false;
 var bitmapObjects = new Map();
 
+let myluckyWidth = 48;
+
 $(function() {
+	createRangeHtmlWidth();
+	createRangeHtmlHeight();
+
 	matrix = createArray(8, 5);
   	updateTable();
 	initOptions();
 
 	$('#_output').hide();
-	$('#imgName').val(1);
 });
+
+function createRangeHtmlWidth() {
+	// Get the unordered list element inside #widthDropDiv
+	const dropdownMenu = document.querySelector('#widthDropDiv .dropdown-menu');
+	const itemsToAdd = [5, 10, 16, 22, 48];
+	itemsToAdd.forEach((item) => {
+		const newListItem = document.createElement('li');
+		const newLink = document.createElement('a');
+		newLink.href = '#';
+		newLink.textContent = item;
+		// Add the link to the list item
+		newListItem.appendChild(newLink);
+		// Add the list item to the unordered list
+		dropdownMenu.appendChild(newListItem);
+	});
+}
+
+function createRangeHtmlHeight() {
+	// Get the unordered list element inside #heightDropDiv
+	const dropdownMenu = document.querySelector('#heightDropDiv .dropdown-menu');
+	const itemsToAdd = [8, 16];
+	itemsToAdd.forEach((item) => {
+		const newListItem = document.createElement('li');
+		const newLink = document.createElement('a');
+		newLink.href = '#';
+		newLink.textContent = item;
+		// Add the link to the list item
+		newListItem.appendChild(newLink);
+		// Add the list item to the unordered list
+		dropdownMenu.appendChild(newListItem);
+	});
+}
 
 function updateTable() {
 	var width = matrix[0].length;
@@ -24,13 +60,13 @@ function updateTable() {
 	$('#_grid tr:last-child td').addClass('disabled-cell');
 
 	// Add 'disabled-cell' class to the last column only if width is 48
-	if (width === 48) {
+	if (width === myluckyWidth) {
 		$('#_grid tr td:last-child').addClass('disabled-cell');
 	}
 
 	// Event listeners, applying the same conditions as before
 	let selector = "td:not(tr:last-child td)";
-	if (width === 48) {
+	if (width === myluckyWidth) {
 		selector += ":not(:last-child)";
 	}
 	$table.on("mousedown", selector, toggle);
@@ -50,7 +86,7 @@ function downloadTableImage() {
 	let height = matrix.length;
     let desiredWidth = 400; // Set your desired width
     let desiredHeight = 400;  // Set your desired height
-	if(width == 48)
+	if(width >= myluckyWidth)
 	{
 		desiredWidth = 800;
 	}
@@ -85,7 +121,7 @@ function downloadTableImage() {
         // Create a new anchor element for the image
         const link = document.createElement("a");
         link.href = dataURL;
-        link.download = "image_data_" + $('#imgName').val() + ".png"; // Use a unique name for each image
+        link.download = "image_data_" + $('#input_imageFilename').val() + ".png"; // Use a unique name for each image
 
         // Append the link to the body (not displayed)
         document.body.appendChild(link);
@@ -114,63 +150,24 @@ function initOptions() {
 
 	$('#donwloadButton').click(downloadTableImage);
 	
-	$('#imgName').click(function () {
-		$('#imgName').select();
-	});
-
-	// Add the enter key event
-	$('#imgName').keydown(function (event) {
-		if (event.keyCode === 13) {
-			// Code to execute when the enter key is pressed
-			// updateCode();
-			bitmapObjects.forEach((value, key) => {
-				const dataURL = value[1]; // This should be the image data URL
-
-				// Create a new anchor element for each image
-				const link = document.createElement("a");
-				link.href = dataURL;
-				link.download = "image_data_" + key + ".png"; // Use a unique name for each image
-
-				// Append the link to the body (not displayed)
-				document.body.appendChild(link);
-
-				// Trigger the download
-				link.click();
-
-				// Clean up by removing the link
-				document.body.removeChild(link);
-			})
-		}
+	$('#input_imageFilename').click(function () {
+		$('#input_imageFilename').select();
 	});
 
 	 $('#widthDropDiv li a').click(function () {
-	 	var width = parseInt($(this).html());
-		if(width == 5)
-		{
-			matrix = createArray(8, width);
-		}
-		else if(width == 48)
-		{
-			matrix = createArray(16, width);
-		}
-        // matrix = createArray(height, width);
+		 var width = parseInt($(this).html());
+		 var height = matrix.length;
+        matrix = createArray(height, width);
+
         updateTable();
         updateSummary();
-		$('#widthDrop').title = width;
      });
 
      $('#heightDropDiv li a').click(function () {
-	 	// var width = matrix[0].length;
+	 	var width = matrix[0].length;
 	 	var height = parseInt($(this).html());
-		if(height == 8)
-		{
-			matrix = createArray(height, 5);
-		}
-		else if(height == 16)
-		{
-			matrix = createArray(height, 48);
-		}
-        // matrix = createArray(height, width);
+
+        matrix = createArray(height, width);
         updateTable();
         updateSummary();
      });
@@ -210,14 +207,14 @@ function updateCode() {
 	var bytes = data[0];
 	// var bytes_TM1680 = data[1];
 
-	var maxtrixData = "DotMatrixImg data" + $('#imgName').val();
+	var maxtrixData = "DotMatrixImg data" + $('#input_imageFilename').val();
 	maxtrixData += " = {\n";
 	maxtrixData += "\t.data = {" + bytes + "},\n";
 	maxtrixData += "\t.h = " + matrix.length + ",\n";
 	maxtrixData += "\t.w = " + matrix[0].length + ",\n";
 	maxtrixData += "};";
 
-	bitmapObjects.set($('#imgName').val(), maxtrixData);
+	bitmapObjects.set($('#input_imageFilename').val(), maxtrixData);
 
 	var displayText = "";
 	bitmapObjects.forEach((value, key) => {

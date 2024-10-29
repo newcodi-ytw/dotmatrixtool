@@ -19,7 +19,7 @@ a:hover {
   border: 1px solid #fff;
 }
 
-.input-field-image-name {
+.input-field {
   width: 90px;
   color: #333;
   text-shadow: none; /* Prevent inheritence from `body` */
