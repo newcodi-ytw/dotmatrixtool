@@ -5,6 +5,7 @@ var msbendian = false;
 var bitmapObjects = new Map();
 
 let myluckyWidth = 48;
+let myluckyHeight = 16;
 let image_logo = "0x3e, 0x7f, 0x41, 0x09, 0x41, 0x19, 0x41, 0x29, 0x22, 0x46, 0x00, 0x00, 0x7f, 0x7f, 0x08, 0x49, 0x08, 0x49, 0x08, 0x49, 0x7f, 0x41, 0x00, 0x00, 0x7c, 0x7c, 0x12, 0x12, 0x11, 0x11, 0x12, 0x12, 0x7c, 0x7c, 0x00, 0x00, 0x7f, 0x7f, 0x09, 0x41, 0x19, 0x41, 0x29, 0x41, 0x46, 0x3e, 0x00, 0x00, 0x3e, 0x03, 0x41, 0x04, 0x49, 0x78, 0x49, 0x04, 0x3a, 0x03, 0x00, 0x00, 0x7f, 0x00, 0x49, 0x00, 0x49, 0x5f, 0x49, 0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0xe0, 0x00, 0xf8, 0x00, 0xfe, 0x3f, 0x80, 0x0f, 0x80, 0x03, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00";
 
 $(function() {
@@ -23,7 +24,7 @@ $(function() {
 function createRangeHtmlWidth() {
 	// Get the unordered list element inside #widthDropDiv
 	const dropdownMenu = document.querySelector('#widthDropDiv .dropdown-menu');
-	const itemsToAdd = [5, 10, 16, 22, 48, 56];
+	const itemsToAdd = [1, 5, 6, 10, 14, 48, 60];
 	itemsToAdd.forEach((item) => {
 		const newListItem = document.createElement('li');
 		const newLink = document.createElement('a');
@@ -61,9 +62,9 @@ function updateTable() {
 
 	// Add 'disabled-cell' class to the last row
 	$('#_grid tr:last-child td').addClass('disabled-cell');
-
-	// Add 'disabled-cell' class to the last column only if width is 48
+	
 	if (width === myluckyWidth) {
+		// Add 'disabled-cell' class to the last column only if width is 48
 		$('#_grid tr td:last-child').addClass('disabled-cell');
 	}
 
@@ -72,10 +73,12 @@ function updateTable() {
 	if (width === myluckyWidth) {
 		selector += ":not(:last-child)";
 	}
+
 	$table.on("mousedown", selector, toggle);
 	$table.on("mouseenter", selector, toggle);
 	$table.on("dragstart", function() { return false; });
 }
+
 function downloadTableImage() {
     const table = $('#_grid')[0];
 
@@ -139,10 +142,27 @@ function downloadTableImage() {
     });
 }
 
+function resizeMatrix(oldMatrix, newHeight, newWidth) {
+    const newMatrix = createArray(newHeight, newWidth);
+	
+	let minHeight = Math.min(oldMatrix.length, newHeight);
+    for (let i = 0; i < minHeight; i++) {
+		let minWidth = Math.min(oldMatrix[i].length, newWidth);
+        for (let j = 0; j < minWidth; j++) {
+			if(i === minHeight - 1 || (j === minWidth - 1 && minWidth === myluckyWidth)) {
+				newMatrix[i][j] = 0;	
+			} else {
+				newMatrix[i][j] = oldMatrix[i][j];
+			}
+        }
+    }
+
+    return newMatrix;
+}
 
 function initOptions() {
 	$('#clearButton').click(function() { 
-		matrix = createArray(matrix.length,matrix[0].length); 
+		matrix = createArray(matrix.length, matrix[0].length); 
 		updateTable(); 
 		// $('#_output').hide();
 	});
@@ -157,22 +177,22 @@ function initOptions() {
 		$('#input_imageFilename').select();
 	});
 
-	 $('#widthDropDiv li a').click(function () {
-		 var width = parseInt($(this).html());
-		 var height = matrix.length;
-        matrix = createArray(height, width);
+	$('#widthDropDiv li a').click(function () {
+		var width = parseInt($(this).html());
+		var height = matrix.length;
+		matrix = resizeMatrix(matrix, height, width);
 
-        updateTable();
-        updateSummary();
-     });
+		updateTable();
+		updateSummary();
+	});
 
-     $('#heightDropDiv li a').click(function () {
-	 	var width = matrix[0].length;
-	 	var height = parseInt($(this).html());
+	$('#heightDropDiv li a').click(function () {
+		var width = matrix[0].length;
+		var height = parseInt($(this).html());
+		matrix = resizeMatrix(matrix, height, width);
 
-        matrix = createArray(height, width);
-        updateTable();
-        updateSummary();
+		updateTable();
+		updateSummary();
      });
 
      $('#byteDropDiv li a').click(function () {
@@ -379,7 +399,11 @@ function populateTable(table, rows, cells, content) {
             $(row.cells[j]).data('i', i);
             $(row.cells[j]).data('j', j);
 			if (content[i][j]) {
-				$(row.cells[j]).addClass('on');
+				if (i === rows - 1 || (j === cells - 1 && cells === myluckyWidth)) {
+					continue;
+				} else {
+					$(row.cells[j]).addClass('on');
+				}
 			}
         }
         table.appendChild(row);
