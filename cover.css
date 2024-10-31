@@ -19,12 +19,31 @@ a:hover {
   border: 1px solid #fff;
 }
 
+.btn-group {
+  margin-left: 14px;
+}
+
+#donwloadButton {
+  background-color: red;
+  color: yellow;
+}
+
 .input-field {
-  width: 90px;
+  width: 250px;
   color: #333;
   text-shadow: none; /* Prevent inheritence from `body` */
   background-color: #fff;
-  border: 1px solid #fff;
+}
+
+.underlined-input {
+  border: none;                /* Remove default border */
+  border-bottom: 2px solid #5852e8; /* Add underline */
+  padding: 4px 0;               /* Adjust padding to prevent shift */
+  outline: none;                /* Remove outline on focus */
+}
+
+.underlined-input:focus {
+  border-bottom-color: #007BFF; /* Optional: change color on focus */
 }
 
 /*
