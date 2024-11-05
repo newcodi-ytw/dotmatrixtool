@@ -15,7 +15,7 @@ $(function() {
 	createRangeHtmlWidth();
 	createRangeHtmlHeight();
 
-	matrix = createArray(16, 48);
+	matrix = createArray(8, 5);
   	updateTable();
 	initOptions();
 
@@ -25,7 +25,7 @@ $(function() {
 function createRangeHtmlWidth() {
 	// Get the unordered list element inside #widthDropDiv
 	const dropdownMenu = document.querySelector('#widthDropDiv .dropdown-menu');
-	const itemsToAdd = [1, 5, 6, 10, 14, 48, 60];
+	const itemsToAdd = [1, 5, 6, 8, 10, 14, 48, 60];
 	itemsToAdd.forEach((item) => {
 		const newListItem = document.createElement('li');
 		const newLink = document.createElement('a');
@@ -41,7 +41,7 @@ function createRangeHtmlWidth() {
 function createRangeHtmlHeight() {
 	// Get the unordered list element inside #heightDropDiv
 	const dropdownMenu = document.querySelector('#heightDropDiv .dropdown-menu');
-	const itemsToAdd = [8, 16];
+	const itemsToAdd = [7, 8, 16];
 	itemsToAdd.forEach((item) => {
 		const newListItem = document.createElement('li');
 		const newLink = document.createElement('a');
@@ -61,7 +61,7 @@ function updateTable() {
 	$('#_grid').html('');
 	$('#_grid').append(populateTable(null, height, width, matrix));
 
-	if (disabledRow) {
+	if (disabledRow && height >= 8) {
 		// Add 'disabled-cell' class to the last row
 		$('#_grid tr:last-child td').addClass('disabled-cell');
 	}
@@ -72,7 +72,7 @@ function updateTable() {
 
 	let selector = '';
 	// Event listeners, applying the same conditions as before
-	if (disabledRow) {
+	if (disabledRow && height >= 8) {
 		selector += "td:not(tr:last-child td)";
 	} else {
 		selector = 'td';
@@ -170,8 +170,9 @@ function resizeMatrix(oldMatrix, newHeight, newWidth) {
 function initOptions() {
 	$('#clearButton').click(function() { 
 		matrix = createArray(matrix.length, matrix[0].length); 
-		updateTable(); 
-		// $('#_output').hide();
+		updateTable();
+		bitmapObjects = new Map();
+		$('#_output').hide();
 	});
 
 	$('#generateButton').click(updateCode);
@@ -237,12 +238,16 @@ function updateCode() {
 	var bytes = data[0];
 	// var bytes_TM1680 = data[1];
 
-	var maxtrixData = "static const Image_t image_" + $('#input_imageFilename').val();
+	var maxtrixData = "static Image_t data_" + $('#input_imageFilename').val();
 	maxtrixData += " = {\n";
 	maxtrixData += "\t.data = (uint8_t[]){" + bytes + "},\n";
-	maxtrixData += "\t.h = " + matrix.length + ",\n";
-	maxtrixData += "\t.w = " + matrix[0].length + ",\n";
+	maxtrixData += "\t.size = {\n";
+	maxtrixData += "\t\t.h = " + matrix.length + ",\n";
+	maxtrixData += "\t\t.w = " + matrix[0].length + ",\n";
+	maxtrixData += "\t}\n";
 	maxtrixData += "};";
+
+	bitmapObjects = new Map();
 
 	bitmapObjects.set($('#input_imageFilename').val(), maxtrixData);
 
