@@ -186,30 +186,36 @@ body {
   .masthead,
   .mastfoot,
   .cover-container {
-    width: 700px;
+    width: 70%;
   }
 }
 
 .table-container {
   text-align: center;   /* Center the content horizontally */
+  background-color: black;
+  border-radius: 20px;
+  padding: 30px;
 }
 
 #_grid table {
   border-collapse: separate;    /* Keep existing styles */
-  border-spacing: 2px;          /* Keep existing styles */
+  border-spacing: 1.2px;          /* Keep existing styles */
   cursor: crosshair;            /* Keep existing styles */
   margin: 0 auto;               /* Center the table */
   display: table;               /* Change to table display for centering */
+  background: #76781e57;
 }
 
 #_grid table tr td {
-  background-color: #5a5a5a;
+  border-radius: 50%;
+  background-color: black;
   padding:7px;
 }
 
 #_grid table tr td:hover, #_grid table tr td.on:hover {
-  background-color: #c3c1ff;
+  background-color: white;
   padding:7px;
+  border-radius: 50%;
 }
 
 #_grid table tr td.on {
@@ -222,10 +228,12 @@ body {
   background-color: black;
   cursor: not-allowed;      /* Change cursor to indicate it's disabled */
   pointer-events: none;     /* Prevent interaction with these cells */
+  border-radius: 0;
 }
 
 #_grid td.disabled-cell::after {
-  content: 'X'; /* Unicode character for a cross mark */
+  /* Unicode character for a cross mark */
+  /* content: 'X';  */
   color: white;   /* Change the color as needed */
   position: absolute; /* Position it absolutely within the cell */
   top: 50%; /* Center vertically */
