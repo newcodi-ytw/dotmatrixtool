@@ -132,6 +132,11 @@ body {
   }
 }
 
+ul {
+  max-height: 150px;
+  overflow-y: scroll;
+}
+
 
 /*
  * Cover
