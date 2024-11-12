@@ -12,8 +12,7 @@ let image_logo = "0x3e, 0x7f, 0x41, 0x09, 0x41, 0x19, 0x41, 0x29, 0x22, 0x46, 0x
 $(function() {
 	$('#input_imageFilename').val('logo');
 
-	createRangeHtmlWidth();
-	createRangeHtmlHeight();
+	updateRangeHtmlOptions_WH();
 
 	matrix = createArray(8, 5);
   	updateTable();
@@ -22,36 +21,31 @@ $(function() {
 	$('#_output').hide();
 });
 
-function createRangeHtmlWidth() {
-	// Get the unordered list element inside #widthDropDiv
-	const dropdownMenu = document.querySelector('#widthDropDiv .dropdown-menu');
-	const itemsToAdd = [1, 5, 6, 8, 10, 14, 48, 60];
-	itemsToAdd.forEach((item) => {
-		const newListItem = document.createElement('li');
-		const newLink = document.createElement('a');
-		newLink.href = '#';
-		newLink.textContent = item;
-		// Add the link to the list item
-		newListItem.appendChild(newLink);
-		// Add the list item to the unordered list
-		dropdownMenu.appendChild(newListItem);
-	});
-}
+function updateRangeHtmlOptions_WH() {
+	const dropdownMenuH = document.querySelector('#heightDropDiv .dropdown-menu');
+	const dropdownMenuW = document.querySelector('#widthDropDiv .dropdown-menu');
 
-function createRangeHtmlHeight() {
-	// Get the unordered list element inside #heightDropDiv
-	const dropdownMenu = document.querySelector('#heightDropDiv .dropdown-menu');
-	const itemsToAdd = [7, 8, 16];
-	itemsToAdd.forEach((item) => {
+	for (let index = 1; index <= 48; index++) {
 		const newListItem = document.createElement('li');
 		const newLink = document.createElement('a');
 		newLink.href = '#';
-		newLink.textContent = item;
+		newLink.textContent = index;
 		// Add the link to the list item
 		newListItem.appendChild(newLink);
 		// Add the list item to the unordered list
-		dropdownMenu.appendChild(newListItem);
-	});
+		dropdownMenuW.appendChild(newListItem);
+	}
+
+	for (let index = 1; index <= 16; index++) {
+		const newListItem = document.createElement('li');
+		const newLink = document.createElement('a');
+		newLink.href = '#';
+		newLink.textContent = index;
+		// Add the link to the list item
+		newListItem.appendChild(newLink);
+		// Add the list item to the unordered list
+		dropdownMenuH.appendChild(newListItem);
+	}
 }
 
 function updateTable() {
@@ -185,9 +179,16 @@ function initOptions() {
 		$('#input_imageFilename').select();
 	});
 
+	function roundUpTo8(v) {
+		return ((v + 7) & ~7);
+	}
+
 	$('#widthDropDiv li a').click(function () {
 		var width = parseInt($(this).html());
 		var height = matrix.length;
+		if ((width * height) % 8 != 0){
+			height = roundUpTo8(matrix.length);
+		}
 		matrix = resizeMatrix(matrix, height, width);
 
 		updateTable();
@@ -197,6 +198,9 @@ function initOptions() {
 	$('#heightDropDiv li a').click(function () {
 		var width = matrix[0].length;
 		var height = parseInt($(this).html());
+		if ((width * height) % 8 != 0){
+			width = roundUpTo8(matrix[0].length);
+		}
 		matrix = resizeMatrix(matrix, height, width);
 
 		updateTable();
@@ -238,12 +242,13 @@ function updateCode() {
 	var bytes = data[0];
 	// var bytes_TM1680 = data[1];
 
-	var maxtrixData = "static Image_t data_" + $('#input_imageFilename').val();
+	// var maxtrixData = "static Image_t data" + $('#input_imageFilename').val();
+	var maxtrixData = "static Image_t " + $('#input_imageFilename').val();
 	maxtrixData += " = {\n";
 	maxtrixData += "\t.data = (uint8_t[]){" + bytes + "},\n";
 	maxtrixData += "\t.size = {\n";
-	maxtrixData += "\t\t.h = " + matrix.length + ",\n";
 	maxtrixData += "\t\t.w = " + matrix[0].length + ",\n";
+	maxtrixData += "\t\t.h = " + matrix.length + ",\n";
 	maxtrixData += "\t}\n";
 	maxtrixData += "};";
 
@@ -253,7 +258,7 @@ function updateCode() {
 
 	var displayText = "";
 	bitmapObjects.forEach((value, key) => {
-		displayText += value + "\n";
+		displayText += value;
 	})
 
 	$('#_output').html("\n"+displayText);

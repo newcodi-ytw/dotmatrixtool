@@ -186,7 +186,7 @@ body {
   .masthead,
   .mastfoot,
   .cover-container {
-    width: 70%;
+    width: 100%;
   }
 }
 
@@ -199,7 +199,7 @@ body {
 
 #_grid table {
   border-collapse: separate;    /* Keep existing styles */
-  border-spacing: 1.2px;          /* Keep existing styles */
+  border-spacing: 2.5px;          /* Keep existing styles */
   cursor: crosshair;            /* Keep existing styles */
   margin: 0 auto;               /* Center the table */
   display: table;               /* Change to table display for centering */
