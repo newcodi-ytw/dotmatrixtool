@@ -211,6 +211,9 @@ function initOptions() {
 	$('#fullImageDropDiv li a').click(function () {
 		var selection = $(this).html();
 		scanFullFrame = selection.startsWith("All");
+
+		var selectedText = $(this).text(); // Get the text of the clicked option
+		$("#fullImageDrop").text(selectedText + ' ').append('<span class="caret"></span>'); // Update the button text
 	});
 
      $('#byteDropDiv li a').click(function () {
