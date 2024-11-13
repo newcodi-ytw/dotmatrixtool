@@ -1,5 +1,6 @@
 var matrix;
 var $table;
+var scanFullFrame = false;
 var rowMajor = false;
 var msbendian = false;
 var bitmapObjects = new Map();
@@ -14,7 +15,7 @@ $(function() {
 
 	updateRangeHtmlOptions_WH();
 
-	matrix = createArray(8, 5);
+	matrix = createArray(16, 48);
   	updateTable();
 	initOptions();
 
@@ -207,6 +208,11 @@ function initOptions() {
 		updateSummary();
      });
 
+	$('#fullImageDropDiv li a').click(function () {
+		var selection = $(this).html();
+		scanFullFrame = selection.startsWith("All");
+	});
+
      $('#byteDropDiv li a').click(function () {
 	 	var selection = $(this).html();
         rowMajor = selection.startsWith("Row");  
@@ -240,17 +246,28 @@ function updateCode() {
 	$('#_output').show();
 	var data = generateByteArray();
 	var bytes = data[0];
+	var width = data[2];
+	var height = data[3];
+	
+	// var width = matrix[0].length;
+	// var height = matrix.length;
+	
 	// var bytes_TM1680 = data[1];
 
 	// var maxtrixData = "static Image_t data" + $('#input_imageFilename').val();
+
+	// var maxtrixData = "static Image_t " + $('#input_imageFilename').val();
+	// maxtrixData += " = {\n";
+	// maxtrixData += "\t.data = (uint8_t[]){" + bytes + "},\n";
+	// maxtrixData += "\t.size = {\n";
+	// maxtrixData += "\t\t.w = " + width + ",\n";
+	// maxtrixData += "\t\t.h = " + height + ",\n";
+	// maxtrixData += "\t}\n";
+	// maxtrixData += "};";
+
 	var maxtrixData = "static Image_t " + $('#input_imageFilename').val();
-	maxtrixData += " = {\n";
-	maxtrixData += "\t.data = (uint8_t[]){" + bytes + "},\n";
-	maxtrixData += "\t.size = {\n";
-	maxtrixData += "\t\t.w = " + matrix[0].length + ",\n";
-	maxtrixData += "\t\t.h = " + matrix.length + ",\n";
-	maxtrixData += "\t}\n";
-	maxtrixData += "};";
+	maxtrixData += " = {(uint8_t[]){" + bytes + "}, ";
+	maxtrixData += "{" + width + ", "+ height + "}};";
 
 	bitmapObjects = new Map();
 
@@ -264,6 +281,8 @@ function updateCode() {
 	$('#_output').html("\n"+displayText);
 	$('#_output').removeClass('prettyprinted');
 	prettyPrint();
+
+	navigator.clipboard.writeText(displayText);
 
 	addCopyButton(displayText);
 }
@@ -331,24 +350,59 @@ function readData() {
 function generateByteArray() {
 	var width = matrix[0].length;
 	var height = matrix.length;
-	var buffer = new Array(width * height);
-	var bytes = new Array((width * height) / 8);
-	var bytes_TM1680 = new Array((width * height) / 8);
+	// var buffer = new Array(width * height);
+	// var bytes = new Array((width * height) / 8);
+	// var bytes_TM1680 = new Array((width * height) / 8);
 
 	// Column Major
-	var temp;
-	for (var x = 0; x < width; x++) {
-		for (var y = 0; y < height; y++) {
-			temp = matrix[y][x];
+	var maxWidth = 0;
+	var maxHeight = 0;
+
+	if (scanFullFrame) {
+		maxWidth = width;
+		maxHeight = height;
+	}
+	else {
+		//search for the boundaries
+		for (var x = 0; x < width; x++) {
+			for (var y = 0; y < height; y++) {
+				var temp = matrix[y][x];
+				if (x > maxWidth && temp == 1)
+					maxWidth = x;
+				if (y > maxHeight && temp == 1)
+					maxHeight = y;
+			}
+		}
+
+		if (maxWidth == 0 && maxHeight == 0) {
+			maxWidth = width;
+			maxHeight = height;
+		} else {
+			maxWidth += 1;
+			maxHeight += 1;
+		}
+	}
+
+	function roundUpTo8(v) {
+		return ((v + 7) & ~7);
+	}
+
+	let buffer = new Array(maxWidth * roundUpTo8(maxHeight));
+	let bytes = new Array((maxWidth * roundUpTo8(maxHeight)) / 8);
+	let bytes_TM1680 = new Array((maxWidth * roundUpTo8(maxHeight)) / 8);
+
+	for (var x = 0; x < maxWidth; x++) {
+		for (var y = 0; y < maxHeight; y++) {
+			var temp = matrix[y][x];
+
 			if (!temp) temp = 0;
 			// Row Major or Column Major?
 			if (!rowMajor) {
-				buffer[x * height + y] = temp;	
+				buffer[x * maxHeight + y] = temp;	
 			}
 			else {
-				buffer[y * width + x] = temp;
+				buffer[y * maxWidth + x] = temp;
 			}
-			
 		}
 	}
 
@@ -388,7 +442,7 @@ function generateByteArray() {
 	    return x;
 	}).join(', ');
 
-	return [formatted, formatted_TM1680];
+	return [formatted, formatted_TM1680, maxWidth, maxHeight];
 }
 
 function toggle(e) {
