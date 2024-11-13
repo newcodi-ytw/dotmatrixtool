@@ -8,11 +8,9 @@ var bitmapObjects = new Map();
 const disabledRow = 1;
 const disabledCol = 48;
 
-let image_logo = "0x3e, 0x7f, 0x41, 0x09, 0x41, 0x19, 0x41, 0x29, 0x22, 0x46, 0x00, 0x00, 0x7f, 0x7f, 0x08, 0x49, 0x08, 0x49, 0x08, 0x49, 0x7f, 0x41, 0x00, 0x00, 0x7c, 0x7c, 0x12, 0x12, 0x11, 0x11, 0x12, 0x12, 0x7c, 0x7c, 0x00, 0x00, 0x7f, 0x7f, 0x09, 0x41, 0x19, 0x41, 0x29, 0x41, 0x46, 0x3e, 0x00, 0x00, 0x3e, 0x03, 0x41, 0x04, 0x49, 0x78, 0x49, 0x04, 0x3a, 0x03, 0x00, 0x00, 0x7f, 0x00, 0x49, 0x00, 0x49, 0x5f, 0x49, 0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0xe0, 0x00, 0xf8, 0x00, 0xfe, 0x3f, 0x80, 0x0f, 0x80, 0x03, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00";
+let inputImageDataField = "static Image_t large_N = {(uint8_t[]){0xff, 0x01, 0x08, 0x00, 0x10, 0x00, 0x20, 0x00, 0xff, 0x01}, {5, 9}};";
 
 $(function() {
-	$('#input_imageFilename').val('logo');
-
 	updateRangeHtmlOptions_WH();
 
 	matrix = createArray(16, 48);
@@ -320,12 +318,50 @@ function addCopyButton(resultText) {
 }
 
 function readData() {
-	var bytestr = prompt("Input your data here, in hex format: 0x1, 0x2", image_logo);
-	if (!bytestr) return;
+	var inputdata = prompt("Input your data here, in hex format: 0x1, 0x2", inputImageDataField);
+	if (!inputdata) return;
+
+	matrix = createArray(matrix.length, matrix[0].length); 
+	updateTable();
+	bitmapObjects = new Map();
+	$('#_output').hide();
+
+	var image_name = null;
+	var image_bytes = null;
+	var image_width = null;
+	var image_height = null;
 	var width = matrix[0].length;
 	var height = matrix.length;
 
-	var bytes = bytestr.split(',').map(function (x) { return parseInt(x) });
+	// Regular expressions to capture each part
+	var nameMatch = inputdata.match(/static Image_t (\w+)/);
+	var bytesMatch = inputdata.match(/\{(0x[0-9a-fA-F]{2}(, 0x[0-9a-fA-F]{2})*)\}/);
+	var sizeMatch = inputdata.match(/\{(\d+), (\d+)\}/);
+
+	if (nameMatch && bytesMatch && sizeMatch) {
+		image_name = nameMatch[1];
+		image_bytes = bytesMatch[1];
+		image_width = sizeMatch[1];
+		image_height = sizeMatch[2];
+
+		width = image_width;
+		height = image_height;
+
+		$('#input_imageFilename').val(image_name);
+
+		console.log("image_name:", image_name);
+		console.log("image_bytes:", image_bytes);
+		console.log("image_width:", image_width);
+		console.log("image_height:", image_height);
+	} else {
+		console.log("Error: Could not parse the string");
+
+		return;
+	}
+
+	var bytes = image_bytes.split(',').map(function (x) { return parseInt(x) });
+
+	// if(height>8) height = 16;
 
 	var byteinarow = Math.ceil(width / 8);
 	var byteinacol = Math.ceil(height / 8);
@@ -360,6 +396,8 @@ function generateByteArray() {
 	// Column Major
 	var maxWidth = 0;
 	var maxHeight = 0;
+	var imageRealWidth = 0;
+	var imageRealHeight = 0;
 
 	if (scanFullFrame) {
 		maxWidth = width;
@@ -390,9 +428,14 @@ function generateByteArray() {
 		return ((v + 7) & ~7);
 	}
 
-	let buffer = new Array(maxWidth * roundUpTo8(maxHeight));
-	let bytes = new Array((maxWidth * roundUpTo8(maxHeight)) / 8);
-	let bytes_TM1680 = new Array((maxWidth * roundUpTo8(maxHeight)) / 8);
+	imageRealWidth = maxWidth;
+	imageRealHeight = maxHeight;
+
+	maxHeight = roundUpTo8(maxHeight);
+
+	let buffer = new Array(maxWidth * maxHeight);
+	let bytes = new Array((maxWidth * maxHeight) / 8);
+	let bytes_TM1680 = new Array((maxWidth * maxHeight) / 8);
 
 	for (var x = 0; x < maxWidth; x++) {
 		for (var y = 0; y < maxHeight; y++) {
@@ -445,7 +488,7 @@ function generateByteArray() {
 	    return x;
 	}).join(', ');
 
-	return [formatted, formatted_TM1680, maxWidth, maxHeight];
+	return [formatted, formatted_TM1680, imageRealWidth, imageRealHeight];
 }
 
 function toggle(e) {
