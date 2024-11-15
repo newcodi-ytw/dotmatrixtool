@@ -20,6 +20,10 @@ $(function() {
 	$('#_output').hide();
 });
 
+function roundUpTo8(v) {
+	return Math.ceil(v / 8) * 8;
+}
+
 function updateRangeHtmlOptions_WH() {
 	const dropdownMenuH = document.querySelector('#heightDropDiv .dropdown-menu');
 	const dropdownMenuW = document.querySelector('#widthDropDiv .dropdown-menu');
@@ -175,12 +179,8 @@ function initOptions() {
 	$('#donwloadButton').click(downloadTableImage);
 	
 	$('#input_imageFilename').click(function () {
-		$('#input_imageFilename').select();
+		// $('#input_imageFilename').select();
 	});
-
-	function roundUpTo8(v) {
-		return ((v + 7) & ~7);
-	}
 
 	$('#widthDropDiv li a').click(function () {
 		var width = parseInt($(this).html());
@@ -345,7 +345,7 @@ function readData() {
 		image_height = sizeMatch[2];
 
 		width = image_width;
-		height = image_height;
+		height = roundUpTo8(image_height);
 
 		$('#input_imageFilename').val(image_name);
 
@@ -358,6 +358,9 @@ function readData() {
 
 		return;
 	}
+
+	matrix = createArray(height, width);
+	console.log(width, height);
 
 	var bytes = image_bytes.split(',').map(function (x) { return parseInt(x) });
 
@@ -424,14 +427,13 @@ function generateByteArray() {
 		}
 	}
 
-	function roundUpTo8(v) {
-		return ((v + 7) & ~7);
-	}
-
 	imageRealWidth = maxWidth;
 	imageRealHeight = maxHeight;
 
+	// if(maxHeight > 8) maxHeight = 16;
 	maxHeight = roundUpTo8(maxHeight);
+
+	console.log('generate ', imageRealWidth, imageRealHeight, maxWidth, maxHeight);
 
 	let buffer = new Array(maxWidth * maxHeight);
 	let bytes = new Array((maxWidth * maxHeight) / 8);
